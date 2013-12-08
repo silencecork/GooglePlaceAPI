@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center" >
+
+    <LinearLayout 
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="3"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+        
+        <TextView 
+            android:id="@+id/place_name"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:singleLine="true"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:text="摩斯漢堡MOSBURGER"/>
+        <TextView 
+            android:id="@+id/place_address"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dip"
+            android:layout_marginRight="10dip"
+            android:singleLine="true"
+            android:textSize="16sp"
+            android:text="台北縣新店市民權路45號"/>"
+        
+    </LinearLayout>
+    <TextView 
+        android:id="@+id/rating"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_weight="10"
+        android:textSize="45sp"
+        android:textStyle="bold"
+        android:text="4.2"/>
+
+</LinearLayout>
