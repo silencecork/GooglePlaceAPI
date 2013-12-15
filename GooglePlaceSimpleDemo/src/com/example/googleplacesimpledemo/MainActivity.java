@@ -12,14 +12,12 @@ import com.silencecork.google.search.nearby.Place;
 
 public class MainActivity extends Activity implements OnSearchResultListener {
 	
-	private GooglePlaceApi placeApi;
-	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        placeApi = new GooglePlaceApi("", this);
+        GooglePlaceApi placeApi = new GooglePlaceApi("", this);
         
         placeApi.search(24.989926, 121.545414, 2000, "food");
     }
