@@ -3,10 +3,6 @@ package com.android.demo.eat;
 import java.util.List;
 
 import android.app.Activity;
-import android.content.Context;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.ListView;
@@ -19,7 +15,6 @@ public class Main extends Activity implements OnSearchResultListener {
 	
 	
 	private GooglePlaceApi place;
-	private LocationManager locationManager;
 	private LocationAdapter adapter;
 	private ListView listView;
 	private static final String API_KEY = "";

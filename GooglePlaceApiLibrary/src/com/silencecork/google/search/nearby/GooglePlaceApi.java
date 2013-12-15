@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.net.Uri;
@@ -15,6 +16,8 @@ import android.util.Log;
 public class GooglePlaceApi {
 	
 	private static final String TAG = "GooglePlaceApi";
+	
+	private static final int VALID_REQUEST_DELAY = 2000;
 	
 	private static final Uri SEARCH_BASE_URL = Uri.parse("https://maps.googleapis.com/maps/api/place/nearbysearch/json");
 
@@ -72,53 +75,10 @@ public class GooglePlaceApi {
 				double longitude = request.longitude;
 				int radius = request.radius;
 				String type = request.type;
+				List<Place> placeList = new ArrayList<Place>();
+				boolean result = retrievePlaces(latitude, longitude, radius, type, null, placeList);
 		        
-		        Uri.Builder builder = SEARCH_BASE_URL.buildUpon();
-		        
-		        builder.appendQueryParameter("location", latitude + "," + longitude);
-		        builder.appendQueryParameter("radius", Integer.toString(radius));
-		        
-		        if (!TextUtils.isEmpty(type)) {
-		            builder.appendQueryParameter("types", type);
-		        }
-		        
-		        /*if(!TextUtils.isEmpty(detailName)) {
-		            builder.appendQueryParameter("name", detailName);
-		        }*/
-		        
-		        builder.appendQueryParameter("language", "zh-TW");
-		        
-		        builder.appendQueryParameter("sensor", "false");
-		        builder.appendQueryParameter("key", mAPIKey);
-		        
-		        String data = null;
-				try {
-					data = Util.get(builder.build().toString());
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-		        if (data != null) {
-		            try {
-		                JSONObject json = new JSONObject(data);
-		                String status = json.getString("status");
-		                if (!"OK".equals(status)) {
-		                	Log.e(TAG, "error status " + status);
-		                	return null;
-		                }
-		                JSONArray array = json.getJSONArray("results");
-		                int count = array.length();
-		                ArrayList<Place> list = new ArrayList<Place>();
-		                for (int i = 0; i < count; i++) {
-		                    JSONObject entry = array.getJSONObject(i);
-		                    Place place = new Place(entry);
-		                    list.add(place);
-		                }
-		                return list;
-		            } catch (Exception e) {
-		                e.printStackTrace();
-		            }
-		        }
-				return null;
+				return (result) ? placeList : null;
 			}
 
 			@Override
@@ -134,5 +94,81 @@ public class GooglePlaceApi {
 		
 		task.execute(request);
 		
+	}
+	
+	private boolean retrievePlaces(double latitude, double longitude, int radius, String type, String pageToken, List<Place> list) {
+		String data = searchPlace(latitude, longitude, radius, type, pageToken);
+        if (data != null) {
+            try {
+            	
+            	if (!parsingData(data, list)) {
+            		return false;
+            	}
+            	JSONObject json = new JSONObject(data);
+            	String nextPageToken = null;
+                if (json.has("next_page_token")) {
+                	nextPageToken = json.getString("next_page_token");
+                }
+                if (!TextUtils.isEmpty(nextPageToken)) {
+                	Thread.sleep(VALID_REQUEST_DELAY);
+                	retrievePlaces(latitude, longitude, radius, type, nextPageToken, list);
+                }
+                
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        
+        return false;
+	}
+	
+	private String searchPlace(double latitude, double longitude, int radius, String type, String nextPageToken) {
+		Uri.Builder builder = SEARCH_BASE_URL.buildUpon();
+        
+        builder.appendQueryParameter("location", latitude + "," + longitude);
+        builder.appendQueryParameter("radius", Integer.toString(radius));
+        
+        if (!TextUtils.isEmpty(type)) {
+            builder.appendQueryParameter("types", type);
+        }
+        
+        if (!TextUtils.isEmpty(nextPageToken)) {
+            builder.appendQueryParameter("pagetoken", nextPageToken);
+        }
+        
+        builder.appendQueryParameter("language", "zh-TW");
+        
+        builder.appendQueryParameter("sensor", "false");
+        builder.appendQueryParameter("key", mAPIKey);
+        
+        String data = null;
+		try {
+			data = Util.get(builder.build().toString());
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
+		return data;
+	}
+	
+	private boolean parsingData(String data, List<Place> list) throws JSONException {
+		JSONObject json = new JSONObject(data);
+        String status = json.getString("status");
+        if (!"OK".equals(status)) {
+        	Log.e(TAG, "error status " + status);
+        	Log.e(TAG, "data " + data);
+        	return false;
+        }
+        
+        JSONArray array = json.getJSONArray("results");
+        int count = array.length();
+        
+        for (int i = 0; i < count; i++) {
+            JSONObject entry = array.getJSONObject(i);
+            Place place = new Place(entry);
+            list.add(place);
+        }
+        return true;
 	}
 }
